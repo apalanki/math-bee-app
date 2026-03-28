@@ -22,13 +22,22 @@ export default function Home() {
               <p className="text-xs text-amber-500 font-semibold tracking-wide">National Bee Practice</p>
             </div>
           </div>
-          <button
-            onClick={() => navigate("/speed-drill")}
-            className="flex items-center gap-2 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md hover:shadow-lg active:scale-95"
-            style={{ backgroundColor: "#F59E0B" }}
-          >
-            ⚡ Speed Drill
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/report")}
+              className="flex items-center gap-2 font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md hover:shadow-lg active:scale-95"
+              style={{ backgroundColor: "#F0FDF4", color: "#166534", border: "1px solid #86EFAC" }}
+            >
+              📊 Report
+            </button>
+            <button
+              onClick={() => navigate("/speed-drill")}
+              className="flex items-center gap-2 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md hover:shadow-lg active:scale-95"
+              style={{ backgroundColor: "#F59E0B" }}
+            >
+              ⚡ Speed Drill
+            </button>
+          </div>
         </div>
       </header>
 

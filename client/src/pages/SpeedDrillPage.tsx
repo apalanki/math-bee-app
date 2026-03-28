@@ -8,6 +8,7 @@ import { speedDrills, SpeedDrill, speedDrillCategories, getSpeedDrillsByCategory
 import { useSpeedScores } from "@/hooks/useProgress";
 import { useInputMode } from "@/hooks/useInputMode";
 import InputModeToggle from "@/components/InputModeToggle";
+import { playSpeedCorrect, playSpeedWrong, playFanfare } from "@/hooks/useSounds";
 
 const DRILL_TIME = 5;
 
@@ -162,6 +163,7 @@ export default function SpeedDrillPage() {
         correct: correctCount, total: questions.length,
         timePerQuestion: Math.round((Date.now() - startTime) / 1000 / questions.length),
       });
+      setTimeout(() => playFanfare(), 200);
       setPhase("results");
     } else {
       setCurrentIdx(nextIdx);
@@ -192,6 +194,7 @@ export default function SpeedDrillPage() {
     const newResults = [...results, { q, userAns: userAnswer, correct }];
     setResults(newResults);
     setFlashBg(correct ? C.greenLight : C.redLight);
+    if (correct) playSpeedCorrect(); else playSpeedWrong();
     setTimeout(() => { setFlashBg(null); advanceOrFinish(newResults); }, 350);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questions, currentIdx, userAnswer, results]);

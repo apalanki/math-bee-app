@@ -9,6 +9,7 @@ import { useLocation, useParams } from "wouter";
 import { getTopic, Question } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
 import { useInputMode } from "@/hooks/useInputMode";
+import { playCorrect, playWrong, playHint, playFanfare } from "@/hooks/useSounds";
 import InputModeToggle from "@/components/InputModeToggle";
 
 const QUESTION_TIME = 60;
@@ -215,6 +216,12 @@ export default function QuizPage() {
         setSessionAnswered(s => s + 1);
         setSessionCorrect(s => s + 1);
       }
+      // Play fanfare on last question, correct chime otherwise
+      if (currentIdx + 1 >= questions.length) {
+        setTimeout(() => playFanfare(), 80);
+      } else {
+        playCorrect();
+      }
       setQState("correct");
     } else {
       // Record as wrong only on first wrong attempt
@@ -226,13 +233,16 @@ export default function QuizPage() {
       // Shake the input
       setShakeInput(true);
       setTimeout(() => setShakeInput(false), 500);
+      playWrong();
       // Advance to next hint state
       const hintIdx = HINT_STATES.indexOf(qState);
       if (hintIdx === -1) {
         // Was "answering" → move to wrong_h0 (show Hint 1)
         setQState("wrong_h0");
+        setTimeout(() => playHint(), 400);
       } else if (hintIdx < HINT_STATES.length - 1) {
         setQState(HINT_STATES[hintIdx + 1]);
+        setTimeout(() => playHint(), 400);
       }
       // If already at wrong_h3, stay — final answer is shown
       setUserAnswer("");
