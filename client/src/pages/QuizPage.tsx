@@ -271,7 +271,22 @@ export default function QuizPage() {
     }
   };
 
-  // ── Loading ───────────────────────────────────────────────────────────
+  // ── Global Enter key — advances to next question from anywhere on page ───
+  // (covers tap mode where no text input is focused)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter') return;
+      if (document.activeElement === inputRef.current) return; // let input handle it
+      if (isDone(qState)) {
+        e.preventDefault();
+        handleNext();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [qState, handleNext]);
+
+  // ── Loading ────────────────────────────────────────────────────────────────────────────────────
   if (!topic || questions.length === 0) {
     return (
       <div className="min-h-screen honeycomb-bg flex items-center justify-center">
@@ -528,11 +543,15 @@ export default function QuizPage() {
         </div>
 
         {/* Keyboard hint */}
-        {!isTap && !showChoices && (
+        {done ? (
           <p className="text-center text-xs text-amber-400 mt-4 font-semibold">
-            Press <kbd className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold">Enter</kbd> to submit · advance
+            Press <kbd style={{background:'#FEF3C7', color:'#92400E', padding:'1px 6px', borderRadius:'4px', fontWeight:'bold'}}>Enter ↵</kbd> to go to next question
           </p>
-        )}
+        ) : (!isTap && !showChoices && (
+          <p className="text-center text-xs text-amber-400 mt-4 font-semibold">
+            Press <kbd style={{background:'#FEF3C7', color:'#92400E', padding:'1px 6px', borderRadius:'4px', fontWeight:'bold'}}>Enter ↵</kbd> to submit
+          </p>
+        ))}
       </main>
     </div>
   );
