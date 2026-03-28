@@ -1,6 +1,5 @@
 // Home page — Honeycomb Kingdom design
-// Shows hero, topic grid ranked by importance, speed drill CTA, progress overview
-
+// All bg colors use inline style to avoid Tailwind v4 CSS-var generation gaps
 import { useLocation } from "wouter";
 import { topics, getTotalQuestionCount, speedDrills } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
@@ -23,20 +22,20 @@ export default function Home() {
               <p className="text-xs text-amber-500 font-semibold tracking-wide">National Bee Practice</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/speed-drill")}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md hover:shadow-lg active:scale-95"
-            >
-              ⚡ Speed Drill
-            </button>
-          </div>
+          <button
+            onClick={() => navigate("/speed-drill")}
+            className="flex items-center gap-2 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md hover:shadow-lg active:scale-95"
+            style={{ backgroundColor: "#F59E0B" }}
+          >
+            ⚡ Speed Drill
+          </button>
         </div>
       </header>
 
       <main className="container py-8 space-y-10">
         {/* ── Hero ── */}
-        <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-white p-8 shadow-xl">
+        <section className="relative rounded-3xl overflow-hidden text-white p-8 shadow-xl"
+          style={{ background: "linear-gradient(135deg, #F59E0B, #F97316)" }}>
           <div className="absolute inset-0 opacity-10"
             style={{backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66zm0-2l26-15V18L28 2 2 18v31l26 15z' fill='white'/%3E%3Cpath d='M28 100L0 84V50l28-16 28 16v34L28 100zm0-2l26-15V52L28 36 2 52v31l26 15z' fill='white'/%3E%3C/svg%3E\")"}}
           />
@@ -50,22 +49,17 @@ export default function Home() {
                 Practice all {total} questions across 14 topics — ranked from most to least important for the National Math Bee!
               </p>
               <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                <div className="bg-white/20 backdrop-blur rounded-xl px-4 py-2 text-center">
-                  <div className="font-display text-2xl">{total}</div>
-                  <div className="text-xs text-amber-100">Questions</div>
-                </div>
-                <div className="bg-white/20 backdrop-blur rounded-xl px-4 py-2 text-center">
-                  <div className="font-display text-2xl">{speedDrills.length}</div>
-                  <div className="text-xs text-amber-100">Speed Drills</div>
-                </div>
-                <div className="bg-white/20 backdrop-blur rounded-xl px-4 py-2 text-center">
-                  <div className="font-display text-2xl">14</div>
-                  <div className="text-xs text-amber-100">Topics</div>
-                </div>
-                <div className="bg-white/20 backdrop-blur rounded-xl px-4 py-2 text-center">
-                  <div className="font-display text-2xl">{correct}</div>
-                  <div className="text-xs text-amber-100">Correct ✓</div>
-                </div>
+                {[
+                  { val: total, label: "Questions" },
+                  { val: speedDrills.length, label: "Speed Drills" },
+                  { val: 14, label: "Topics" },
+                  { val: correct, label: "Correct ✓" },
+                ].map(stat => (
+                  <div key={stat.label} className="rounded-xl px-4 py-2 text-center" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
+                    <div className="font-display text-2xl">{stat.val}</div>
+                    <div className="text-xs text-amber-100">{stat.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -74,13 +68,10 @@ export default function Home() {
             <div className="relative mt-5">
               <div className="flex justify-between text-sm text-amber-100 mb-1">
                 <span>Overall Progress</span>
-                <span>{answered}/{total} answered ({Math.round((correct/total)*100)}% correct)</span>
+                <span>{answered}/{total} answered ({Math.round((correct / total) * 100)}% correct)</span>
               </div>
-              <div className="h-3 bg-white/25 rounded-full overflow-hidden">
-                <div
-                  className="h-full honey-bar"
-                  style={{width: `${(answered/total)*100}%`}}
-                />
+              <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.25)" }}>
+                <div className="h-full honey-bar" style={{ width: `${(answered / total) * 100}%` }} />
               </div>
             </div>
           )}
@@ -89,14 +80,15 @@ export default function Home() {
         {/* ── Speed Drill CTA ── */}
         <section
           onClick={() => navigate("/speed-drill")}
-          className="cursor-pointer rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 text-white p-6 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+          className="cursor-pointer rounded-2xl text-white p-6 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+          style={{ background: "linear-gradient(135deg, #7C3AED, #4F46E5)" }}
         >
           <div className="flex items-center gap-4">
             <div className="text-5xl">⚡</div>
             <div>
               <h3 className="font-display text-2xl mb-1">Speed Drill Mode</h3>
-              <p className="text-violet-200 font-semibold">
-                Race against the clock! {speedDrills.length} rapid-fire computation questions — addition, subtraction, multiplication, division, squares & more. 5 seconds each!
+              <p className="font-semibold" style={{ color: "#DDD6FE" }}>
+                Race against the clock! {speedDrills.length} rapid-fire computation questions — addition, subtraction, multiplication, division, squares &amp; more. 5 seconds each!
               </p>
             </div>
             <div className="ml-auto text-3xl">→</div>
@@ -106,9 +98,9 @@ export default function Home() {
         {/* ── Topics Grid ── */}
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-1 flex-1 bg-gradient-to-r from-amber-400 to-transparent rounded-full" />
+            <div className="h-1 flex-1 rounded-full" style={{ background: "linear-gradient(to right, #F59E0B, transparent)" }} />
             <h2 className="font-display text-3xl text-amber-700">Practice Topics</h2>
-            <div className="h-1 flex-1 bg-gradient-to-l from-amber-400 to-transparent rounded-full" />
+            <div className="h-1 flex-1 rounded-full" style={{ background: "linear-gradient(to left, #F59E0B, transparent)" }} />
           </div>
           <p className="text-center text-amber-600 font-semibold mb-6 -mt-3">
             📊 Ranked from most important (#1) to least important (#14) for the National Math Bee
@@ -127,50 +119,38 @@ export default function Home() {
               return (
                 <div
                   key={topic.id}
-                  className="topic-card bg-white rounded-2xl border border-amber-100 shadow-md overflow-hidden"
+                  className="topic-card bg-white rounded-2xl border border-amber-100 shadow-md overflow-hidden cursor-pointer"
                   onClick={() => navigate(`/topic/${topic.id}`)}
                 >
-                  {/* Color bar */}
-                  <div className="h-2" style={{background: topic.color}} />
-
+                  <div className="h-2" style={{ background: topic.color }} />
                   <div className="p-4">
-                    {/* Rank badge + emoji */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
                         <span className="text-3xl">{topic.emoji}</span>
                         <span
-                          className="font-display text-lg font-bold px-2 py-0.5 rounded-lg text-white text-sm"
-                          style={{background: topic.color}}
+                          className="font-display text-sm font-bold px-2 py-0.5 rounded-lg text-white"
+                          style={{ background: topic.color }}
                         >
                           #{topic.rank}
                         </span>
                       </div>
-                      {pct === 100 && (
-                        <span className="text-xl animate-sparkle-pop">⭐</span>
-                      )}
+                      {pct === 100 && <span className="text-xl animate-sparkle-pop">⭐</span>}
                     </div>
 
-                    <h3 className="font-display text-lg text-gray-800 leading-tight mb-1">
-                      {topic.name}
-                    </h3>
+                    <h3 className="font-display text-lg text-gray-800 leading-tight mb-1">{topic.name}</h3>
                     <p className="text-xs text-gray-500 mb-3 leading-snug">{topic.description}</p>
 
-                    {/* Question count */}
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
                       <span>{topic.questions.length} questions</span>
                       {progress.answered > 0 && (
-                        <span className="text-green-600 font-bold">{correctPct}% correct</span>
+                        <span className="font-bold" style={{ color: "#16A34A" }}>{correctPct}% correct</span>
                       )}
                     </div>
 
-                    {/* Progress bar */}
-                    <div className="h-2 bg-amber-100 rounded-full overflow-hidden mb-3">
+                    <div className="h-2 rounded-full overflow-hidden mb-3" style={{ backgroundColor: "#FEF3C7" }}>
                       <div
                         className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${pct}%`,
-                          background: topic.color,
-                        }}
+                        style={{ width: `${pct}%`, background: topic.color }}
                       />
                     </div>
 
@@ -178,7 +158,7 @@ export default function Home() {
                       <span className="text-xs text-gray-400">{progress.answered}/{topic.questions.length} done</span>
                       <button
                         className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-all hover:opacity-90 active:scale-95"
-                        style={{background: topic.color}}
+                        style={{ background: topic.color }}
                       >
                         {progress.answered === 0 ? "Start →" : pct === 100 ? "Review ↺" : "Continue →"}
                       </button>
@@ -191,7 +171,7 @@ export default function Home() {
         </section>
 
         {/* ── Tips Section ── */}
-        <section className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 p-6">
+        <section className="rounded-2xl border border-green-200 p-6" style={{ background: "linear-gradient(135deg, #F0FDF4, #ECFDF5)" }}>
           <h3 className="font-display text-2xl text-green-700 mb-4">🌟 How to Use This App</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
@@ -209,9 +189,8 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ── Footer ── */}
       <footer className="text-center py-6 text-amber-500 text-sm font-semibold">
-        🐝 Math Bee Practice App — National Mathematics Bee (Grade 3 & Under) 🐝
+        🐝 Math Bee Practice App — National Mathematics Bee (Grade 3 &amp; Under) 🐝
       </footer>
     </div>
   );

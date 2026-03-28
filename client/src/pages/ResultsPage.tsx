@@ -1,4 +1,5 @@
 // ResultsPage — shows quiz session summary
+// All bg colors use inline style to avoid Tailwind v4 CSS-var generation gaps
 import { useLocation } from "wouter";
 import { getTopic } from "@/data/questions";
 import { useProgress } from "@/hooks/useProgress";
@@ -16,14 +17,15 @@ export default function ResultsPage() {
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
 
+  const heroBg =
+    pct >= 80 ? "linear-gradient(135deg, #16A34A, #059669)" :
+    pct >= 60 ? "linear-gradient(135deg, #F59E0B, #EA580C)" :
+    "linear-gradient(135deg, #6366F1, #7C3AED)";
+
   return (
     <div className="min-h-screen honeycomb-bg flex flex-col items-center justify-center p-6">
       <div className="max-w-md w-full space-y-6">
-        <div className={`rounded-3xl p-8 text-white text-center shadow-xl ${
-          pct >= 80 ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
-          pct >= 60 ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-          'bg-gradient-to-br from-indigo-500 to-violet-600'
-        }`}>
+        <div className="rounded-3xl p-8 text-white text-center shadow-xl" style={{ background: heroBg }}>
           <div className="text-5xl mb-3">{"⭐".repeat(stars)}{"☆".repeat(3 - stars)}</div>
           {topic && <div className="text-4xl mb-2">{topic.emoji}</div>}
           <h2 className="font-display text-3xl mb-1">
@@ -44,7 +46,7 @@ export default function ResultsPage() {
             <button
               onClick={() => navigate(`/quiz/${topicId}`)}
               className="w-full py-4 rounded-2xl text-white font-display text-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
-              style={{background: topic.color}}
+              style={{ background: topic.color }}
             >
               🔄 Practice Again
             </button>
@@ -52,14 +54,16 @@ export default function ResultsPage() {
           {topic && (
             <button
               onClick={() => { resetTopicProgress(topicId); navigate(`/quiz/${topicId}`); }}
-              className="w-full py-3 border-2 border-amber-300 text-amber-700 font-bold rounded-2xl hover:bg-amber-50 transition-all"
+              className="w-full py-3 border-2 border-amber-300 text-amber-700 font-bold rounded-2xl transition-all"
+              style={{ backgroundColor: "transparent" }}
             >
-              ↺ Reset & Start Fresh
+              ↺ Reset &amp; Start Fresh
             </button>
           )}
           <button
             onClick={() => navigate("/")}
-            className="w-full py-3 bg-white border-2 border-amber-200 text-amber-700 font-bold rounded-2xl hover:bg-amber-50 transition-all shadow-md"
+            className="w-full py-3 border-2 border-amber-200 text-amber-700 font-bold rounded-2xl shadow-md transition-all"
+            style={{ backgroundColor: "#FFFFFF" }}
           >
             🏠 Back to Home
           </button>
