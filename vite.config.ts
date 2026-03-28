@@ -152,7 +152,11 @@ function vitePluginManusDebugCollector(): Plugin {
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
+// Base path: use /math-bee-app/ for GitHub Pages, / for local dev
+const base = process.env.GITHUB_PAGES === 'true' ? '/math-bee-app/' : '/';
+
 export default defineConfig({
+  base,
   plugins,
   resolve: {
     alias: {
