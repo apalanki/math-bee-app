@@ -264,3 +264,142 @@
   ::-webkit-scrollbar-thumb { background: #F59E0B; border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: #D97706; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LANDSCAPE / TABLET LAYOUT UTILITIES
+   Fire 10 HD landscape = 1280×800 viewport
+   Strategy: h-screen + overflow-hidden + two-column flex in landscape
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Quiz Page Landscape Layout ── */
+.quiz-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.quiz-header {
+  flex-shrink: 0;
+}
+
+.quiz-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  overflow-y: auto;
+}
+
+.quiz-left  { width: 100%; }
+.quiz-right { width: 100%; }
+
+.quiz-section { margin-bottom: 0.5rem; }
+
+/* Timer sizing — portrait */
+.quiz-timer-size { width: 5rem; height: 5rem; }
+.quiz-timer-text { font-size: 1.5rem; }
+.quiz-question-text { font-size: 1rem; }
+.quiz-choice-btn { padding: 0.75rem 0.75rem; font-size: 0.95rem; }
+
+/* Landscape: hints live in left column, hidden in right */
+.quiz-hints-left-only   { display: none; }
+.quiz-hints-portrait-only { display: block; }
+
+/* ── Speed Drill Landscape Layout ── */
+.drill-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.drill-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  overflow: hidden;
+}
+
+.drill-card {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.drill-question-text { font-size: 2.5rem; }
+.drill-answer-display { min-height: 3.5rem; font-size: 2rem; }
+.drill-input-text { font-size: 1.5rem; }
+.drill-numpad-btn { padding: 0.875rem 0; font-size: 1.5rem; }
+.drill-numpad-submit { padding: 0.875rem 0; font-size: 1.25rem; }
+
+/* ── Landscape media query (≥ 640px wide AND landscape orientation) ── */
+@media (min-width: 640px) and (orientation: landscape) {
+
+  /* Quiz: two-column layout */
+  .quiz-page-wrapper {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .quiz-main {
+    flex-direction: row;
+    align-items: flex-start;
+    overflow: hidden;
+    gap: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .quiz-left {
+    width: 45%;
+    flex-shrink: 0;
+    overflow-y: auto;
+    height: 100%;
+  }
+
+  .quiz-right {
+    flex: 1;
+    overflow-y: auto;
+    height: 100%;
+  }
+
+  /* Smaller timer in landscape */
+  .quiz-timer-size { width: 3.5rem; height: 3.5rem; }
+  .quiz-timer-text { font-size: 1.1rem; }
+  .quiz-question-text { font-size: 0.9rem; }
+  .quiz-choice-btn { padding: 0.5rem 0.6rem; font-size: 0.85rem; }
+
+  /* Hints: show in left column, hide in right */
+  .quiz-hints-left-only   { display: block; }
+  .quiz-hints-portrait-only { display: none; }
+
+  /* Speed Drill: side-by-side layout */
+  .drill-page-wrapper {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .drill-main {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0.5rem 1.5rem;
+  }
+
+  .drill-card {
+    max-width: 22rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .drill-question-text { font-size: 2rem; }
+  .drill-answer-display { min-height: 2.75rem; font-size: 1.75rem; }
+  .drill-input-text { font-size: 1.25rem; }
+  .drill-numpad-btn { padding: 0.6rem 0; font-size: 1.25rem; }
+  .drill-numpad-submit { padding: 0.6rem 0; font-size: 1rem; }
+}

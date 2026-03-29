@@ -56,15 +56,15 @@ function NumberPad({ value, onChange, onSubmit, disabled }: {
   ];
 
   return (
-    <div className="mt-4 space-y-2">
+    <div className="mt-2 space-y-1.5">
       {keys.map((row, ri) => (
-        <div key={ri} className="grid grid-cols-3 gap-2">
+        <div key={ri} className="grid grid-cols-3 gap-1.5">
           {row.map(k => (
             <button
               key={k}
               onClick={() => handleKey(k)}
               disabled={disabled}
-              className="rounded-2xl font-display text-2xl py-4 transition-all active:scale-90 disabled:opacity-30"
+              className="rounded-xl font-display transition-all active:scale-90 disabled:opacity-30 drill-numpad-btn"
               style={{
                 backgroundColor: k === "⌫" ? "#FEE2E2" : "#F5F3FF",
                 color: k === "⌫" ? C.red : C.violet,
@@ -80,7 +80,7 @@ function NumberPad({ value, onChange, onSubmit, disabled }: {
       <button
         onClick={onSubmit}
         disabled={disabled || !value.trim()}
-        className="w-full py-4 text-white font-display text-xl rounded-2xl shadow-lg transition-all active:scale-95 disabled:opacity-40"
+        className="w-full text-white font-display rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-40 drill-numpad-submit"
         style={{ background: `linear-gradient(135deg, ${C.violet}, ${C.indigo})` }}
       >
         Submit ⚡
@@ -387,27 +387,27 @@ export default function SpeedDrillPage() {
 
   // ── DRILLING PHASE ──
   return (
-    <div className="min-h-screen transition-colors duration-200"
+    <div className="drill-page-wrapper transition-colors duration-200"
       style={{ backgroundColor: flashBg ?? "#F5F3FF" }}>
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b shadow-sm" style={{ borderColor: "#C4B5FD" }}>
-        <div className="container flex items-center gap-3 py-3">
+        <div className="container flex items-center gap-3 py-2">
           <span className="text-xl">⚡</span>
-          <h1 className="font-display text-lg flex-1" style={{ color: C.violet }}>Speed Drill — {category}</h1>
+          <h1 className="font-display text-base flex-1" style={{ color: C.violet }}>Speed Drill — {category}</h1>
           <span className="text-sm font-bold mr-2" style={{ color: C.violet }}>{currentIdx + 1}/{questions.length}</span>
           <InputModeToggle />
         </div>
-        <div className="h-1.5" style={{ backgroundColor: "#EDE9FE" }}>
+        <div className="h-1" style={{ backgroundColor: "#EDE9FE" }}>
           <div className="h-full transition-all duration-300"
             style={{ width: `${(currentIdx / questions.length) * 100}%`, background: `linear-gradient(90deg, ${C.violet}, ${C.indigo})` }} />
         </div>
       </header>
 
-      <main className="container py-8 max-w-xl mx-auto">
+      <main className="drill-main">
         {currentQ && (
-          <div className="space-y-4" key={questionKey}>
+          <div className="drill-card" key={questionKey}>
             {/* Timer bar */}
-            <div className="relative">
-              <div className="h-4 rounded-full overflow-hidden" style={{ backgroundColor: C.gray }}>
+            <div className="relative mb-3">
+              <div className="h-3 rounded-full overflow-hidden" style={{ backgroundColor: C.gray }}>
                 <div className="h-full rounded-full"
                   style={{ width: `${timerPct}%`, backgroundColor: timerColor, transition: "width 1s linear, background-color 0.5s ease" }} />
               </div>
@@ -417,15 +417,15 @@ export default function SpeedDrillPage() {
             </div>
 
             {/* Question card */}
-            <div className="bg-white rounded-3xl border-2 shadow-xl p-6 text-center animate-float-up"
+            <div className="bg-white rounded-2xl border-2 shadow-xl p-4 text-center animate-float-up"
               style={{ borderColor: "#C4B5FD" }}>
-              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#A78BFA" }}>
+              <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#A78BFA" }}>
                 {currentQ.category}
               </div>
-              <div className="font-display text-5xl text-gray-800 mb-4">{currentQ.question}</div>
+              <div className={`font-display text-gray-800 mb-3 drill-question-text`}>{currentQ.question}</div>
 
               {/* Display typed answer */}
-              <div className="min-h-16 flex items-center justify-center rounded-2xl mb-2 font-display text-4xl"
+              <div className="drill-answer-display flex items-center justify-center rounded-xl mb-2 font-display"
                 style={{ backgroundColor: "#F5F3FF", border: "2px solid #C4B5FD", color: C.violet }}>
                 {userAnswer || <span style={{ color: "#C4B5FD" }}>?</span>}
               </div>
@@ -440,21 +440,21 @@ export default function SpeedDrillPage() {
                     onChange={e => setUserAnswer(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Type answer..."
-                    className="w-full text-center rounded-2xl px-6 py-3 font-display text-2xl text-gray-800 focus:outline-none transition-all mt-2"
+                    className={`w-full text-center rounded-xl px-4 py-2 font-display text-gray-800 focus:outline-none transition-all mt-1 drill-input-text`}
                     style={{ border: "2px solid #C4B5FD", backgroundColor: "#F5F3FF" }}
                     autoFocus
                   />
                   <button
                     onClick={handleSubmit}
                     disabled={!userAnswer.trim()}
-                    className="mt-3 w-full py-3 text-white font-display text-xl rounded-2xl shadow-md transition-all active:scale-95 disabled:opacity-40"
+                    className="mt-2 w-full py-2.5 text-white font-display text-lg rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-40"
                     style={{ background: `linear-gradient(135deg, ${C.violet}, ${C.indigo})` }}>
                     Submit ⚡
                   </button>
                 </>
               )}
 
-              {/* Tap mode: number pad */}
+              {/* Tap mode: compact number pad */}
               {isTap && (
                 <NumberPad
                   value={userAnswer}
@@ -466,13 +466,13 @@ export default function SpeedDrillPage() {
             </div>
 
             {/* Live score */}
-            <div className="flex justify-center gap-6 text-sm font-bold">
+            <div className="flex justify-center gap-6 text-sm font-bold mt-2">
               <span style={{ color: C.green }}>✓ {results.filter(r => r.correct).length} correct</span>
               <span style={{ color: C.red }}>✗ {results.filter(r => !r.correct).length} wrong</span>
             </div>
 
             {!isTap && (
-              <p className="text-center text-xs font-semibold" style={{ color: "#A78BFA" }}>
+              <p className="text-center text-xs font-semibold mt-1" style={{ color: "#A78BFA" }}>
                 Press <kbd className="px-2 py-0.5 rounded font-bold" style={{ backgroundColor: "#EDE9FE", color: C.violet }}>Enter</kbd> to submit
               </p>
             )}
