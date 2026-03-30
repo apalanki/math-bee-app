@@ -104,6 +104,24 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── Mock Exam CTA ── */}
+        <section
+          onClick={() => navigate("/mock-exam")}
+          className="cursor-pointer rounded-2xl text-white p-6 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+          style={{ background: "linear-gradient(135deg, #1E1B4B, #4338CA)" }}
+        >
+          <div className="flex items-center gap-4">
+            <div className="text-5xl">📋</div>
+            <div>
+              <h3 className="font-display text-2xl mb-1">Mock Exam</h3>
+              <p className="font-semibold" style={{ color: "#C7D2FE" }}>
+                Competition-style test! 25 random questions from all topics — 30-minute countdown, no hints. See how you score!
+              </p>
+            </div>
+            <div className="ml-auto text-3xl">→</div>
+          </div>
+        </section>
+
         {/* ── Topics Grid ── */}
         <section>
           <div className="flex items-center gap-3 mb-6">

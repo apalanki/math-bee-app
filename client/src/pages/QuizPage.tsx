@@ -13,6 +13,7 @@ import { useInputMode } from "@/hooks/useInputMode";
 import { playCorrect, playWrong, playHint, playFanfare } from "@/hooks/useSounds";
 import InputModeToggle from "@/components/InputModeToggle";
 import ClockFace from "@/components/ClockFace";
+import GeometryShape, { shouldShowShape } from "@/components/GeometryShape";
 
 const QUESTION_TIME = 60;
 
@@ -352,6 +353,12 @@ export default function QuizPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-body quiz-question-text font-bold text-gray-800 leading-snug">{currentQ.question}</p>
+                  {/* Render geometry shape for geometry questions */}
+                  {currentQ.topicId === 'geometry' && shouldShowShape(currentQ.question) && (
+                    <div className="mt-3 flex justify-center">
+                      <GeometryShape question={currentQ.question} size={150} />
+                    </div>
+                  )}
                   {/* Render analog clock(s) for time questions */}
                   {currentQ.clockTime && (
                     <div className="flex items-center gap-4 mt-3 flex-wrap">
@@ -457,6 +464,11 @@ export default function QuizPage() {
           {/* ── KEYBOARD TEXT INPUT ── */}
           {!showChoices && !done && (
             <div className="quiz-section">
+              {currentQ.answerFormat && (
+                <p className="text-xs font-bold text-indigo-500 mb-1.5 flex items-center gap-1">
+                  <span>📝</span> Format: <span className="bg-indigo-50 border border-indigo-200 rounded px-1.5 py-0.5 font-mono text-indigo-700">{currentQ.answerFormat}</span>
+                </p>
+              )}
               <div className="flex gap-2">
                 <input
                   ref={inputRef}
@@ -464,7 +476,7 @@ export default function QuizPage() {
                   value={userAnswer}
                   onChange={e => setUserAnswer(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type your answer here..."
+                  placeholder={currentQ.answerFormat ? `e.g. ${currentQ.answerFormat}` : "Type your answer here..."}
                   className={`answer-input flex-1 border-2 rounded-xl px-3 py-2.5 font-bold text-base text-gray-800 bg-amber-50 focus:bg-white transition-all ${shakeInput ? "animate-shake-wrong" : ""}`}
                   autoFocus
                 />

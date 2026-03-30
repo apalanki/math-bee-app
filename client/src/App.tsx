@@ -10,6 +10,7 @@ import QuizPage from "./pages/QuizPage";
 import SpeedDrillPage from "./pages/SpeedDrillPage";
 import ResultsPage from "./pages/ResultsPage";
 import ParentReportPage from "./pages/ParentReportPage";
+import MockExamPage from "./pages/MockExamPage";
 
 // Use hash-based routing so GitHub Pages static hosting works correctly
 // (no server-side routing needed — all navigation is handled via #hash)
@@ -23,6 +24,7 @@ function AppRouter() {
         <Route path="/speed-drill" component={SpeedDrillPage} />
         <Route path="/results" component={ResultsPage} />
         <Route path="/report" component={ParentReportPage} />
+        <Route path="/mock-exam" component={MockExamPage} />
         <Route>{() => <Home />}</Route>
       </Switch>
     </Router>
