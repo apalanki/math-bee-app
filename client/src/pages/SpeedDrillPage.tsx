@@ -333,6 +333,40 @@ export default function SpeedDrillPage() {
       : pct >= 60 ? `linear-gradient(135deg, ${C.amber}, #EA580C)`
       : `linear-gradient(135deg, ${C.red}, #BE123C)`;
 
+    // ── Category breakdown ──
+    const CAT_META: Record<string, { emoji: string; color: string }> = {
+      'Addition':       { emoji: '➕', color: '#F59E0B' },
+      'Subtraction':    { emoji: '➖', color: '#EF4444' },
+      'Multiplication': { emoji: '✖️', color: '#8B5CF6' },
+      'Division':       { emoji: '➗', color: '#3B82F6' },
+      'Doubles':        { emoji: '🎯', color: '#10B981' },
+      'Fractions':      { emoji: '🍕', color: '#F97316' },
+      'Mixed':          { emoji: '🔢', color: '#6366F1' },
+      'Money':          { emoji: '💰', color: '#22C55E' },
+      'Squares':        { emoji: '⬜', color: '#EC4899' },
+      'Time':           { emoji: '⏰', color: '#06B6D4' },
+    };
+    type CatStat = { emoji: string; color: string; total: number; correct: number; wrong: number };
+    const catStats: Record<string, CatStat> = {};
+    for (const r of results) {
+      const cat = r.q.category;
+      if (!catStats[cat]) {
+        const meta = CAT_META[cat] ?? { emoji: '📚', color: '#6B7280' };
+        catStats[cat] = { ...meta, total: 0, correct: 0, wrong: 0 };
+      }
+      catStats[cat].total++;
+      if (r.correct) catStats[cat].correct++;
+      else catStats[cat].wrong++;
+    }
+    const catList = Object.entries(catStats)
+      .map(([name, s]) => ({ name, ...s }))
+      .sort((a, b) => {
+        const aPct = a.total > 0 ? a.correct / a.total : 1;
+        const bPct = b.total > 0 ? b.correct / b.total : 1;
+        return aPct - bPct; // worst first
+      });
+    const weakCats = catList.filter(c => c.total > 0 && c.correct / c.total < 0.7);
+
     return (
       <div className="min-h-screen honeycomb-bg">
         <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-amber-200 shadow-sm">
@@ -342,8 +376,10 @@ export default function SpeedDrillPage() {
           </div>
         </header>
         <main className="container py-8 max-w-2xl mx-auto space-y-6">
+
+          {/* ── Score hero ── */}
           <div className="rounded-3xl p-8 text-white text-center shadow-xl" style={{ background: heroBg }}>
-            <div className="text-5xl mb-2">{"⭐".repeat(stars)}{"☆".repeat(3 - stars)}</div>
+            <div className="text-5xl mb-2">{"⭐".repeat(stars)}{"\u2606".repeat(3 - stars)}</div>
             <div className="font-display text-5xl mb-1">{pct}%</div>
             <div className="text-xl font-semibold text-white/90">{correctCount} / {results.length} correct</div>
             <div className="mt-2 text-white/80">
@@ -354,14 +390,105 @@ export default function SpeedDrillPage() {
             </div>
           </div>
 
+          {/* ── Focus Areas (only if there are weak categories) ── */}
+          {weakCats.length > 0 && (
+            <div className="rounded-2xl p-5 shadow-md"
+              style={{ background: "linear-gradient(135deg, #FFF7ED, #FEF3C7)", border: "2px solid #FDE68A" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">🎯</span>
+                <h3 className="font-display text-lg" style={{ color: "#92400E" }}>Areas to Work On</h3>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#FDE68A", color: "#78350F" }}>Below 70%</span>
+              </div>
+              <p className="text-sm text-amber-700 mb-3">These categories need more practice. Try a focused drill on each one!</p>
+              <div className="space-y-2">
+                {weakCats.map(c => {
+                  const cPct = c.total > 0 ? Math.round((c.correct / c.total) * 100) : 0;
+                  return (
+                    <div key={c.name} className="flex items-center gap-3 bg-white rounded-xl px-4 py-2.5 shadow-sm">
+                      <span className="text-xl">{c.emoji}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-sm text-gray-800">{c.name}</span>
+                          <span className="text-xs font-bold" style={{ color: cPct < 40 ? "#DC2626" : "#D97706" }}>
+                            {c.correct}/{c.total} correct ({cPct}%)
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#E5E7EB" }}>
+                          <div className="h-full rounded-full"
+                            style={{ width: `${cPct}%`, backgroundColor: cPct < 40 ? "#EF4444" : "#F59E0B" }} />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { setCategory(c.name); setTimeout(startDrill, 0); }}
+                        className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-all active:scale-95"
+                        style={{ backgroundColor: c.color }}>
+                        Drill ⚡
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Category breakdown table ── */}
+          {catList.length > 1 && (
+            <div className="bg-white rounded-2xl border shadow-md overflow-hidden" style={{ borderColor: C.violetLight }}>
+              <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: C.violetLight }}>
+                <h3 className="font-display text-lg" style={{ color: C.violet }}>📊 Category Breakdown</h3>
+                <span className="text-xs text-gray-400 font-medium">{catList.length} categories</span>
+              </div>
+              <div className="divide-y" style={{ borderColor: C.violetLight }}>
+                {catList.map(c => {
+                  const cPct = c.total > 0 ? Math.round((c.correct / c.total) * 100) : 0;
+                  const status = cPct >= 80 ? { label: "Strong", bg: "#F0FDF4", text: "#16A34A", bar: "#22C55E" }
+                    : cPct >= 60 ? { label: "OK", bg: "#FFFBEB", text: "#D97706", bar: "#F59E0B" }
+                    : { label: "Needs Work", bg: "#FEF2F2", text: "#DC2626", bar: "#EF4444" };
+                  return (
+                    <div key={c.name} className="px-5 py-3" style={{ backgroundColor: status.bg + "55" }}>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl flex-shrink-0">{c.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-bold text-sm text-gray-800">{c.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold" style={{ color: status.text }}>{c.correct}/{c.total}</span>
+                              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                                style={{ backgroundColor: status.bg, color: status.text, border: `1px solid ${status.bar}33` }}>
+                                {status.label}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#E5E7EB" }}>
+                            <div className="h-full rounded-full"
+                              style={{ width: `${cPct}%`, backgroundColor: status.bar }} />
+                          </div>
+                          {c.wrong > 0 && (
+                            <span className="text-xs text-red-500 mt-0.5 block">✗ {c.wrong} wrong</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Question Review ── */}
           <div className="bg-white rounded-2xl border border-amber-100 shadow-md p-6">
-            <h3 className="font-display text-xl text-amber-700 mb-4">Question Review</h3>
+            <h3 className="font-display text-xl text-amber-700 mb-4">📝 Question Review</h3>
             <div className="space-y-2 max-h-80 overflow-y-auto">
               {results.map((r, i) => (
                 <div key={i} className="flex items-center gap-3 px-4 py-2 rounded-xl"
                   style={{ backgroundColor: r.correct ? "#F0FDF4" : "#FEF2F2", border: `1px solid ${r.correct ? "#BBF7D0" : "#FECACA"}` }}>
                   <span className="text-lg">{r.correct ? "✅" : "❌"}</span>
-                  <span className="font-bold text-gray-700 flex-1">{r.q.question}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-gray-700 block truncate">{r.q.question}</span>
+                    <span className="text-xs font-medium" style={{ color: CAT_META[r.q.category]?.color ?? '#6B7280' }}>
+                      {CAT_META[r.q.category]?.emoji} {r.q.category}
+                    </span>
+                  </div>
                   <span className="text-sm font-bold" style={{ color: C.green }}>{r.q.answer}</span>
                   {!r.correct && <span className="text-sm" style={{ color: C.red }}>You: {r.userAns}</span>}
                 </div>
@@ -369,6 +496,7 @@ export default function SpeedDrillPage() {
             </div>
           </div>
 
+          {/* ── Actions ── */}
           <div className="flex gap-3">
             <button onClick={startDrill}
               className="flex-1 py-4 text-white font-display text-xl rounded-2xl shadow-lg transition-all hover:scale-[1.02]"

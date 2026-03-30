@@ -232,6 +232,43 @@ export default function MockExamPage() {
   const pct = Math.round((correctCount / EXAM_QUESTIONS) * 100);
   const grade = pct >= 90 ? "🏆 Excellent!" : pct >= 75 ? "⭐ Great Job!" : pct >= 60 ? "👍 Good Effort!" : pct >= 40 ? "📚 Keep Practicing!" : "💪 Don't Give Up!";
 
+  // ── Topic breakdown ─────────────────────────────────────────────────────
+  const TOPIC_META: Record<string, { name: string; emoji: string; color: string }> = {
+    'arithmetic':    { name: 'Arithmetic',        emoji: '🔢', color: '#F59E0B' },
+    'word-problems': { name: 'Word Problems',     emoji: '📖', color: '#8B5CF6' },
+    'place-value':   { name: 'Place Value',       emoji: '🏛️', color: '#10B981' },
+    'fractions':     { name: 'Fractions',         emoji: '🍕', color: '#EF4444' },
+    'money':         { name: 'Money',             emoji: '💰', color: '#F97316' },
+    'time':          { name: 'Time',              emoji: '⏰', color: '#06B6D4' },
+    'measurement':   { name: 'Measurement',       emoji: '📏', color: '#84CC16' },
+    'patterns':      { name: 'Number Patterns',   emoji: '🔄', color: '#6366F1' },
+    'geometry':      { name: 'Geometry',          emoji: '📐', color: '#EC4899' },
+    'counting':      { name: 'Counting',          emoji: '🎯', color: '#14B8A6' },
+    'logic':         { name: 'Logic & Reasoning', emoji: '🧠', color: '#A855F7' },
+    'decimals':      { name: 'Decimals',          emoji: '🔵', color: '#3B82F6' },
+    'comparison':    { name: 'Comparison',        emoji: '⚖️', color: '#F43F5E' },
+    'probability':   { name: 'Probability',       emoji: '🎲', color: '#22C55E' },
+  };
+  type TopicStat = { id: string; name: string; emoji: string; color: string; total: number; correct: number; wrong: number; skipped: number };
+  const topicStats: Record<string, TopicStat> = {};
+  for (const r of results) {
+    const tid = r.q.topicId;
+    if (!topicStats[tid]) {
+      const meta = TOPIC_META[tid] ?? { name: tid, emoji: '📚', color: '#6B7280' };
+      topicStats[tid] = { id: tid, ...meta, total: 0, correct: 0, wrong: 0, skipped: 0 };
+    }
+    topicStats[tid].total++;
+    if (r.correct) topicStats[tid].correct++;
+    else if (r.skipped) topicStats[tid].skipped++;
+    else topicStats[tid].wrong++;
+  }
+  const topicList = Object.values(topicStats).sort((a, b) => {
+    const aPct = a.total > 0 ? a.correct / a.total : 1;
+    const bPct = b.total > 0 ? b.correct / b.total : 1;
+    return aPct - bPct; // worst first
+  });
+  const focusAreas = topicList.filter(t => t.total > 0 && t.correct / t.total < 0.7);
+
   // ── INTRO SCREEN ──────────────────────────────────────────────────────
   if (phase === "intro") {
     return (
@@ -313,7 +350,8 @@ export default function MockExamPage() {
           </div>
         </header>
         <main className="container py-8 space-y-6 max-w-2xl mx-auto">
-          {/* Score hero */}
+
+          {/* ── Score hero ── */}
           <div className="rounded-3xl text-white p-8 text-center shadow-2xl"
             style={{ background: "linear-gradient(135deg, #1E1B4B, #4338CA)" }}>
             <div className="text-5xl mb-3">{grade.split(" ")[0]}</div>
@@ -339,10 +377,95 @@ export default function MockExamPage() {
             </div>
           </div>
 
-          {/* Question-by-question breakdown */}
+          {/* ── Focus Areas (only if there are weak topics) ── */}
+          {focusAreas.length > 0 && (
+            <div className="rounded-2xl p-5 shadow-md"
+              style={{ background: "linear-gradient(135deg, #FFF7ED, #FEF3C7)", border: "2px solid #FDE68A" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">🎯</span>
+                <h3 className="font-display text-lg" style={{ color: "#92400E" }}>Focus Areas</h3>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#FDE68A", color: "#78350F" }}>Needs Practice</span>
+              </div>
+              <p className="text-sm text-amber-700 mb-3">These topics had less than 70% accuracy. Spend extra time practicing them!</p>
+              <div className="space-y-2">
+                {focusAreas.map(t => {
+                  const topicPct = t.total > 0 ? Math.round((t.correct / t.total) * 100) : 0;
+                  return (
+                    <div key={t.name} className="flex items-center gap-3 bg-white rounded-xl px-4 py-2.5 shadow-sm">
+                      <span className="text-xl">{t.emoji}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-sm text-gray-800">{t.name}</span>
+                          <span className="text-xs font-bold" style={{ color: topicPct < 40 ? "#DC2626" : "#D97706" }}>
+                            {t.correct}/{t.total} correct ({topicPct}%)
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#E5E7EB" }}>
+                          <div className="h-full rounded-full transition-all"
+                            style={{ width: `${topicPct}%`, backgroundColor: topicPct < 40 ? "#EF4444" : "#F59E0B" }} />
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/quiz/${t.id}`)}
+                        className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-all active:scale-95"
+                        style={{ backgroundColor: t.color }}>
+                        Practice →
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Topic-by-topic breakdown ── */}
+          <div className="bg-white rounded-2xl border border-amber-100 shadow-lg overflow-hidden">
+            <div className="px-5 py-4 border-b border-amber-100 flex items-center justify-between">
+              <h3 className="font-display text-lg text-amber-700">📊 Topic Breakdown</h3>
+              <span className="text-xs text-gray-400 font-medium">{topicList.length} topics covered</span>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {topicList.map(t => {
+                const topicPct = t.total > 0 ? Math.round((t.correct / t.total) * 100) : 0;
+                const status = topicPct >= 80 ? { label: "Strong", bg: "#F0FDF4", text: "#16A34A", bar: "#22C55E" }
+                  : topicPct >= 60 ? { label: "OK", bg: "#FFFBEB", text: "#D97706", bar: "#F59E0B" }
+                  : { label: "Needs Work", bg: "#FEF2F2", text: "#DC2626", bar: "#EF4444" };
+                return (
+                  <div key={t.name} className="px-5 py-3" style={{ backgroundColor: status.bg + "55" }}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl flex-shrink-0">{t.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="font-bold text-sm text-gray-800">{t.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold" style={{ color: status.text }}>{t.correct}/{t.total}</span>
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: status.bg, color: status.text, border: `1px solid ${status.bar}33` }}>
+                              {status.label}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#E5E7EB" }}>
+                          <div className="h-full rounded-full"
+                            style={{ width: `${topicPct}%`, backgroundColor: status.bar }} />
+                        </div>
+                        {(t.wrong > 0 || t.skipped > 0) && (
+                          <div className="flex gap-3 mt-1">
+                            {t.wrong > 0 && <span className="text-xs text-red-500">✗ {t.wrong} wrong</span>}
+                            {t.skipped > 0 && <span className="text-xs text-amber-500">– {t.skipped} skipped</span>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── Question-by-question review ── */}
           <div className="bg-white rounded-2xl border border-amber-100 shadow-lg overflow-hidden">
             <div className="px-5 py-4 border-b border-amber-100">
-              <h3 className="font-display text-lg text-amber-700">Question Breakdown</h3>
+              <h3 className="font-display text-lg text-amber-700">📝 Question Review</h3>
             </div>
             <div className="divide-y divide-amber-50">
               {results.map((r, i) => (
@@ -359,12 +482,12 @@ export default function MockExamPage() {
                           Your answer: {r.userAns || "(empty)"}
                         </span>
                       )}
-                      {!r.correct && (
-                        <span className="text-xs font-bold text-indigo-600">
-                          ✓ {r.q.answer}
-                        </span>
+                      {!r.correct && !r.skipped && (
+                        <span className="text-xs font-bold text-indigo-600">✓ {r.q.answer}</span>
                       )}
-                      <span className="text-xs text-amber-500 font-medium capitalize">{r.q.topicId}</span>
+                      <span className="text-xs font-medium px-1.5 py-0.5 rounded" style={{ backgroundColor: (TOPIC_META[r.q.topicId]?.color ?? '#6B7280') + '22', color: TOPIC_META[r.q.topicId]?.color ?? '#6B7280' }}>
+                        {TOPIC_META[r.q.topicId]?.emoji} {TOPIC_META[r.q.topicId]?.name ?? r.q.topicId}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -372,7 +495,7 @@ export default function MockExamPage() {
             </div>
           </div>
 
-          {/* Actions */}
+          {/* ── Actions ── */}
           <div className="flex gap-3">
             <button
               onClick={startExam}
