@@ -12,6 +12,7 @@ import { useProgress } from "@/hooks/useProgress";
 import { useInputMode } from "@/hooks/useInputMode";
 import { playCorrect, playWrong, playHint, playFanfare } from "@/hooks/useSounds";
 import InputModeToggle from "@/components/InputModeToggle";
+import ClockFace from "@/components/ClockFace";
 
 const QUESTION_TIME = 60;
 
@@ -351,6 +352,23 @@ export default function QuizPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-body quiz-question-text font-bold text-gray-800 leading-snug">{currentQ.question}</p>
+                  {/* Render analog clock(s) for time questions */}
+                  {currentQ.clockTime && (
+                    <div className="flex items-center gap-4 mt-3 flex-wrap">
+                      <div className="flex flex-col items-center gap-1">
+                        {currentQ.clockTime2 && (
+                          <span className="text-xs font-bold text-amber-600 uppercase tracking-wide">Start</span>
+                        )}
+                        <ClockFace time={currentQ.clockTime} size={120} />
+                      </div>
+                      {currentQ.clockTime2 && (
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wide">End</span>
+                          <ClockFace time={currentQ.clockTime2} size={120} />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
