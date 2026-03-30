@@ -110,8 +110,9 @@ const hintsRevealedForState = (s: QState): number => {
 const isDone = (s: QState) => s === "correct" || s === "timed_out" || s === "wrong_h3";
 
 // ── Component ─────────────────────────────────────────────────────────────
-export default function QuizPage() {
-  const { topicId } = useParams<{ topicId: string }>();
+export default function QuizPage({ topicId: topicIdProp }: { topicId?: string }) {
+  const params = useParams<{ topicId: string }>();
+  const topicId = topicIdProp ?? params.topicId;
   const [, navigate] = useLocation();
   const topic = getTopic(topicId);
   const { recordAnswer } = useProgress();
@@ -133,10 +134,21 @@ export default function QuizPage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordedRef = useRef(false);
 
+  // Reset all session state whenever the topic changes (component stays mounted across routes)
   useEffect(() => {
     if (!topic) return;
     setQuestions(shuffleArray(topic.questions));
-  }, [topic]);
+    setCurrentIdx(0);
+    setUserAnswer("");
+    setQState("answering");
+    setTimeLeft(QUESTION_TIME);
+    setSessionCorrect(0);
+    setSessionAnswered(0);
+    setQuestionKey(k => k + 1);
+    setSelectedChoice(null);
+    recordedRef.current = false;
+    clearInterval(timerRef.current!);
+  }, [topicId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (questions.length === 0 || isTap) return;

@@ -19,12 +19,12 @@ function AppRouter() {
     <Router hook={useHashLocation}>
       <Switch>
         <Route path="/" component={Home} />
-        <Route path="/topic/:topicId" component={TopicPage} />
-        <Route path="/quiz/:topicId" component={QuizPage} />
         <Route path="/speed-drill" component={SpeedDrillPage} />
         <Route path="/results" component={ResultsPage} />
         <Route path="/report" component={ParentReportPage} />
         <Route path="/mock-exam" component={MockExamPage} />
+        <Route path="/topic/:topicId" component={TopicPage} />
+        <Route<{ topicId: string }> path="/quiz/:topicId">{(p) => <QuizPage key={p.topicId} topicId={p.topicId} />}</Route>
         <Route>{() => <Home />}</Route>
       </Switch>
     </Router>
