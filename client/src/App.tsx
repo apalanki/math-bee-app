@@ -24,7 +24,7 @@ function AppRouter() {
         <Route path="/report" component={ParentReportPage} />
         <Route path="/mock-exam" component={MockExamPage} />
         <Route path="/topic/:topicId" component={TopicPage} />
-        <Route<{ topicId: string }> path="/quiz/:topicId">{(p) => <QuizPage key={p.topicId} topicId={p.topicId} />}</Route>
+        <Route<{ topicId: string }> path="/quiz/:topicId">{(p) => <QuizPage key={p?.topicId} topicId={p?.topicId} />}</Route>
         <Route>{() => <Home />}</Route>
       </Switch>
     </Router>

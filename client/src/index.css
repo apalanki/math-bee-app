@@ -271,41 +271,279 @@
    Strategy: h-screen + overflow-hidden + two-column flex in landscape
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Quiz Page Landscape Layout ── */
-.quiz-page-wrapper {
+/* ── Quiz Page — Geo-Explorer Style Layout ── */
+/* Mobile-first: stacked, scrollable. Desktop/tablet: fixed two-panel split */
+
+.qp-wrapper {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-.quiz-header {
+.qp-header {
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
-.quiz-main {
+.qp-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.qp-back-btn   { font-size: 0.875rem; white-space: nowrap; }
+.qp-topic-name { font-size: 0.9rem; }
+.qp-counter    { font-size: 0.75rem; white-space: nowrap; }
+.qp-score      { font-size: 0.75rem; white-space: nowrap; }
+
+/* Two-panel body */
+.qp-body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
   overflow-y: auto;
+  min-height: 0;
 }
 
-.quiz-left  { width: 100%; }
-.quiz-right { width: 100%; }
+/* LEFT PANEL — question card */
+.qp-left {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px; /* mobile: give it enough height */
+}
 
-.quiz-section { margin-bottom: 0.5rem; }
+.qp-question-card {
+  flex: 1;
+  background: white;
+  border-radius: 1.25rem;
+  border: 1px solid #FDE68A;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 1.25rem 1.25rem 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  animation: floatUp 0.3s ease;
+}
 
-/* Timer sizing — portrait */
-.quiz-timer-size { width: 5rem; height: 5rem; }
-.quiz-timer-text { font-size: 1.5rem; }
-.quiz-question-text { font-size: 1rem; }
-.quiz-choice-btn { padding: 0.75rem 0.75rem; font-size: 0.95rem; }
+/* Floating timer — top right of question card */
+.qp-timer-float {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 4.5rem;
+  height: 4.5rem;
+}
 
-/* Landscape: hints live in left column, hidden in right */
-.quiz-hints-left-only   { display: none; }
-.quiz-hints-portrait-only { display: block; }
+.qp-timer-svg {
+  width: 4.5rem;
+  height: 4.5rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.qp-timer-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.qp-timer-num  { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; line-height: 1; }
+.qp-timer-unit { font-size: 0.6rem; color: #9CA3AF; }
+
+/* Difficulty badge — absolutely positioned top left */
+.qp-difficulty-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1.25rem;
+}
+
+/* Question text — large and prominent */
+.qp-question-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 3.5rem 0 0.5rem; /* top padding: clears badge + visual breathing room */
+}
+
+.qp-question-text {
+  font-size: 2.5rem;
+  line-height: 1.4;
+  color: #1F2937;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.qp-visual-area {
+  margin-top: 1rem;
+}
+
+.qp-hints-area {
+  margin-top: 1rem;
+  border-top: 1px solid #FEF3C7;
+  padding-top: 0.75rem;
+}
+
+/* RIGHT PANEL — answer area */
+.qp-right {
+  padding: 0 1rem 1rem;
+}
+
+.qp-right-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.qp-answer-section {
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #FDE68A;
+  padding: 1rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.qp-answer-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #F59E0B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.qp-choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.625rem;
+}
+
+.qp-choice-btn {
+  border-radius: 0.875rem;
+  padding: 0.875rem 0.875rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.qp-choice-label { font-size: 0.7rem; font-weight: 900; }
+
+.qp-text-input {
+  font-size: 1.25rem;
+}
+
+.qp-submit-btn {
+  white-space: nowrap;
+}
+
+.qp-feedback {
+  border-radius: 1rem;
+  padding: 0.875rem 1rem;
+}
+
+.qp-hint-buttons {
+  background: white;
+  border-radius: 1rem;
+  border: 1px dashed #FDE68A;
+  padding: 0.875rem;
+}
+
+.qp-next-section {
+  /* nothing special — full width button */
+}
+
+.qp-pick-prompt {
+  text-align: center;
+  padding: 1rem;
+  opacity: 0.6;
+}
+
+/* ── Desktop / Tablet two-panel layout (≥ 768px) ── */
+@media (min-width: 768px) {
+  .qp-wrapper {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .qp-body {
+    flex-direction: row;
+    overflow: hidden;
+    align-items: stretch;
+  }
+
+  /* Left panel: ~58% width, fixed height */
+  .qp-left {
+    width: 58%;
+    flex-shrink: 0;
+    height: 100%;
+    overflow: hidden;
+    padding: 1.25rem;
+    min-height: unset;
+  }
+
+  /* Right panel: remaining 42%, scrollable */
+  .qp-right {
+    flex: 1;
+    overflow-y: auto;
+    height: 100%;
+    padding: 1.25rem 1.25rem 1.25rem 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .qp-right-inner {
+    gap: 1rem;
+  }
+
+  /* Question card fills the full left panel height */
+  .qp-question-card {
+    height: 100%;
+    min-height: unset;
+  }
+
+  .qp-question-text {
+    font-size: 3.5rem;
+  }
+
+  .qp-timer-float {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .qp-timer-svg {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .qp-timer-num { font-size: 1.5rem; }
+
+  .qp-choice-btn {
+    padding: 1rem;
+    font-size: 1.05rem;
+  }
+
+  .qp-header-inner {
+    padding: 0.625rem 1.5rem;
+  }
+
+  .qp-back-btn   { font-size: 0.95rem; }
+  .qp-topic-name { font-size: 1rem; }
+  .qp-counter    { font-size: 0.85rem; }
+  .qp-score      { font-size: 0.85rem; }
+}
 
 /* ── Speed Drill Landscape Layout ── */
 .drill-page-wrapper {

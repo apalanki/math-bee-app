@@ -1,10 +1,9 @@
-// ─ QuizPage — Honeycomb Kingdom Design
+// ─ QuizPage — Geo-Explorer Style Layout
+// ─ Full-height two-panel: large question text left, answer input/choices right
 // ─ Timer runs continuously; never resets between retries or hint reveals
 // ─ Wrong answer progressively reveals hints: Hint1 → Hint2 → Hint3 → final answer
 // ─ Questions with choices[] always show A/B/C/D tap targets (both modes)
 // ─ Tap mode: auto-generated 4-choice buttons for open-ended questions
-// ─ All bg colors use inline style (Tailwind v4 CSS-var generation gap fix)
-// ─ Landscape layout: two-column (question left, input/hints right) fits Fire 10 800px height
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation, useParams } from "wouter";
 import { getTopic, Question } from "@/data/questions";
@@ -134,7 +133,7 @@ export default function QuizPage({ topicId: topicIdProp }: { topicId?: string })
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recordedRef = useRef(false);
 
-  // Reset all session state whenever the topic changes (component stays mounted across routes)
+  // Reset all session state whenever the topic changes
   useEffect(() => {
     if (!topic) return;
     setQuestions(shuffleArray(topic.questions));
@@ -292,15 +291,15 @@ export default function QuizPage({ topicId: topicIdProp }: { topicId?: string })
   const done = isDone(qState);
 
   const hintMeta = [
-    { label: "Hint 1 — Hardest Clue 🔴", cls: "hint-hard", color: "#EF4444" },
-    { label: "Hint 2 — Medium Clue 🟠", cls: "hint-medium", color: "#F97316" },
-    { label: "Hint 3 — Easiest Clue 🟢", cls: "hint-easy", color: "#22C55E" },
+    { label: "Hint 1 🔴", cls: "hint-hard", color: "#EF4444" },
+    { label: "Hint 2 🟠", cls: "hint-medium", color: "#F97316" },
+    { label: "Hint 3 🟢", cls: "hint-easy", color: "#22C55E" },
   ];
 
   const feedbackMsg = () => {
-    if (qState === "correct") return { emoji: "🎉", title: "Correct! Amazing! 🌟", sub: `Answer: ${currentQ.answer}`, bg: "#F0FDF4", border: "#BBF7D0", titleColor: "#166534", subColor: "#16A34A" };
-    if (qState === "timed_out") return { emoji: "⏰", title: "Time's up!", sub: `Correct answer: ${currentQ.answer}`, bg: "#FFF7ED", border: "#FED7AA", titleColor: "#C2410C", subColor: "#EA580C" };
-    if (qState === "wrong_h3") return { emoji: "💡", title: "Here's the answer!", sub: `Correct answer: ${currentQ.answer}`, bg: "#FEF2F2", border: "#FECACA", titleColor: "#991B1B", subColor: "#DC2626" };
+    if (qState === "correct") return { emoji: "🎉", title: "Correct!", sub: `Answer: ${currentQ.answer}`, bg: "#F0FDF4", border: "#BBF7D0", titleColor: "#166534", subColor: "#16A34A" };
+    if (qState === "timed_out") return { emoji: "⏰", title: "Time's up!", sub: `Answer: ${currentQ.answer}`, bg: "#FFF7ED", border: "#FED7AA", titleColor: "#C2410C", subColor: "#EA580C" };
+    if (qState === "wrong_h3") return { emoji: "💡", title: "Here's the answer!", sub: `Answer: ${currentQ.answer}`, bg: "#FEF2F2", border: "#FECACA", titleColor: "#991B1B", subColor: "#DC2626" };
     if (qState === "wrong_h0") return { emoji: "😅", title: "Not quite! Here's a hint...", sub: "", bg: "#FEF9C3", border: "#FDE68A", titleColor: "#92400E", subColor: "" };
     if (qState === "wrong_h1") return { emoji: "🤔", title: "Try again! One more hint...", sub: "", bg: "#FEF9C3", border: "#FDE68A", titleColor: "#92400E", subColor: "" };
     if (qState === "wrong_h2") return { emoji: "💪", title: "Almost there! Final hint...", sub: "", bg: "#FEF9C3", border: "#FDE68A", titleColor: "#92400E", subColor: "" };
@@ -308,238 +307,225 @@ export default function QuizPage({ topicId: topicIdProp }: { topicId?: string })
   };
   const fb = feedbackMsg();
 
+  const hasVisual = currentQ.clockTime || (currentQ.topicId === 'geometry' && shouldShowShape(currentQ.question));
+
   return (
-    /* Outer wrapper: portrait = scrollable, landscape = fixed viewport height */
-    <div className="quiz-page-wrapper honeycomb-bg">
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-amber-200 shadow-sm quiz-header">
-        <div className="container flex items-center gap-2 py-2">
-          <button onClick={() => navigate(`/topic/${topicId}`)} className="text-amber-600 hover:text-amber-800 font-bold transition-colors text-sm">
+    <div className="qp-wrapper honeycomb-bg">
+      {/* ── Slim top bar ── */}
+      <header className="qp-header bg-white/95 backdrop-blur-md border-b border-amber-200 shadow-sm">
+        <div className="qp-header-inner">
+          <button
+            onClick={() => navigate(`/topic/${topicId}`)}
+            className="qp-back-btn text-amber-600 hover:text-amber-800 font-bold transition-colors"
+          >
             ← Back
           </button>
-          <span className="text-xl">{topic.emoji}</span>
-          <h1 className="font-display text-base text-amber-700 flex-1 truncate">{topic.name}</h1>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-green-600">✓ {sessionCorrect}/{sessionAnswered}</span>
-            <span className="text-xs text-amber-500 font-semibold hidden sm:inline">Q {currentIdx + 1}/{questions.length}</span>
-            <InputModeToggle />
-          </div>
+          <span className="text-lg">{topic.emoji}</span>
+          <h1 className="qp-topic-name font-display text-amber-700 truncate flex-1">{topic.name}</h1>
+          <span className="qp-counter text-amber-500 font-bold">Q {currentIdx + 1}/{questions.length}</span>
+          <span className="qp-score text-green-600 font-bold">✓ {sessionCorrect}/{sessionAnswered}</span>
+          <InputModeToggle />
         </div>
-        <div className="h-1" style={{ backgroundColor: "#FEF3C7" }}>
+        {/* Progress bar */}
+        <div className="h-1 bg-amber-100">
           <div className="h-full honey-bar transition-all duration-300"
             style={{ width: `${(currentIdx / questions.length) * 100}%` }} />
         </div>
       </header>
 
-      {/* ── Main content: portrait = single column, landscape = two columns ── */}
-      <main className="quiz-main container">
-        {/* ── LEFT COLUMN: Timer + Question ── */}
-        <div className="quiz-left">
-          {/* Difficulty badge + counter */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-amber-600">Q {currentIdx + 1} / {questions.length}</span>
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-              currentQ.difficulty === "easy" ? "badge-easy" :
-              currentQ.difficulty === "medium" ? "badge-medium" : "badge-hard"
-            }`}>
-              {currentQ.difficulty.charAt(0).toUpperCase() + currentQ.difficulty.slice(1)}
-            </span>
-          </div>
+      {/* ── Two-panel body ── */}
+      <div className="qp-body">
 
-          {/* Timer + Question card */}
-          <div className="bg-white rounded-2xl border border-amber-100 shadow-xl overflow-hidden animate-float-up" key={questionKey}>
-            <div className="p-4">
-              <div className="flex items-start gap-4">
-                {/* Circular timer */}
-                <div className="flex-shrink-0 relative quiz-timer-size">
-                  <svg className="quiz-timer-size -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#FEF3C7" strokeWidth="8" />
-                    <circle cx="50" cy="50" r="45" fill="none" stroke={timerColor} strokeWidth="8"
-                      strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                      style={{ transition: "stroke-dashoffset 1s linear, stroke 0.5s ease" }} />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-display quiz-timer-text" style={{ color: timerColor }}>{timeLeft}</span>
-                    <span className="text-xs text-gray-400">sec</span>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <p className="font-body quiz-question-text font-bold text-gray-800 leading-snug">{currentQ.question}</p>
-                  {/* Render geometry shape for geometry questions */}
-                  {currentQ.topicId === 'geometry' && shouldShowShape(currentQ.question) && (
-                    <div className="mt-3 flex justify-center">
-                      <GeometryShape question={currentQ.question} size={150} />
-                    </div>
-                  )}
-                  {/* Render analog clock(s) for time questions */}
-                  {currentQ.clockTime && (
-                    <div className="flex items-center gap-4 mt-3 flex-wrap">
-                      <div className="flex flex-col items-center gap-1">
-                        {currentQ.clockTime2 && (
-                          <span className="text-xs font-bold text-amber-600 uppercase tracking-wide">Start</span>
-                        )}
-                        <ClockFace time={currentQ.clockTime} size={120} />
-                      </div>
-                      {currentQ.clockTime2 && (
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="text-xs font-bold text-indigo-600 uppercase tracking-wide">End</span>
-                          <ClockFace time={currentQ.clockTime2} size={120} />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+        {/* ── LEFT PANEL: Question text (maximized) ── */}
+        <div className="qp-left">
+          <div className="qp-question-card" key={questionKey}>
+            {/* Floating timer circle — top right corner */}
+            <div className="qp-timer-float">
+              <svg className="qp-timer-svg -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#FEF3C7" strokeWidth="9" />
+                <circle cx="50" cy="50" r="45" fill="none" stroke={timerColor} strokeWidth="9"
+                  strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={dashOffset}
+                  style={{ transition: "stroke-dashoffset 1s linear, stroke 0.5s ease" }} />
+              </svg>
+              <div className="qp-timer-label">
+                <span className="qp-timer-num" style={{ color: timerColor }}>{timeLeft}</span>
+                <span className="qp-timer-unit">sec</span>
               </div>
             </div>
 
-            {/* Manual hint reveal buttons — shown in left column on landscape */}
-            {qState === "answering" && (
-              <div className="px-4 pb-4 quiz-hints-left-only">
-                <div className="border-t border-amber-100 pt-3">
-                  <p className="text-xs font-bold text-amber-600 mb-2 uppercase tracking-wide">🔍 Need a hint?</p>
-                  <div className="space-y-1.5">
-                    {hintMeta.map((h, i) => (
-                      <button key={i}
-                        onClick={() => {
-                          if (i === 0) setQState("wrong_h0");
-                          else if (i === 1) setQState("wrong_h1");
-                          else setQState("wrong_h2");
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-xl border-2 border-dashed font-semibold text-xs transition-all"
-                        style={{ borderColor: h.color, color: h.color }}>
-                        👁 Reveal {h.label}
-                      </button>
-                    ))}
+            {/* Difficulty badge */}
+            <div className="qp-difficulty-badge">
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                currentQ.difficulty === "easy" ? "badge-easy" :
+                currentQ.difficulty === "medium" ? "badge-medium" : "badge-hard"
+              }`}>
+                {currentQ.difficulty.charAt(0).toUpperCase() + currentQ.difficulty.slice(1)}
+              </span>
+            </div>
+
+            {/* Question text — the star of the show */}
+            <div className="qp-question-body">
+              <p className="qp-question-text font-body font-bold text-gray-800 leading-relaxed">
+                {currentQ.question}
+              </p>
+
+              {/* Geometry SVG shape */}
+              {currentQ.topicId === 'geometry' && shouldShowShape(currentQ.question) && (
+                <div className="qp-visual-area flex justify-center">
+                  <GeometryShape question={currentQ.question} size={hasVisual ? 180 : 160} />
+                </div>
+              )}
+
+              {/* Analog clock(s) */}
+              {currentQ.clockTime && (
+                <div className="qp-visual-area flex items-center gap-6 flex-wrap">
+                  <div className="flex flex-col items-center gap-1">
+                    {currentQ.clockTime2 && (
+                      <span className="text-xs font-bold text-amber-600 uppercase tracking-wide">Start</span>
+                    )}
+                    <ClockFace time={currentQ.clockTime} size={140} />
                   </div>
+                  {currentQ.clockTime2 && (
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-xs font-bold text-indigo-600 uppercase tracking-wide">End</span>
+                      <ClockFace time={currentQ.clockTime2} size={140} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Hints revealed in left panel */}
+            {hintsToShow > 0 && (
+              <div className="qp-hints-area">
+                <div className="space-y-2">
+                  {hintMeta.slice(0, hintsToShow).map((h, i) => (
+                    <div key={i} className={`${h.cls} rounded-xl p-3 animate-hint-drop`}>
+                      <p className="text-xs font-bold mb-0.5" style={{ color: h.color }}>{h.label}</p>
+                      <p className="text-sm text-gray-700 font-medium">{currentQ.hints[i]}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN: Input + Hints + Feedback + Next ── */}
-        <div className="quiz-right">
+        {/* ── RIGHT PANEL: Answer input / choices ── */}
+        <div className="qp-right">
+          <div className="qp-right-inner">
 
-          {/* ── CHOICE BUTTONS ── */}
-          {showChoices && (
-            <div className="quiz-section">
-              {!done && (
-                <>
-                  <p className="text-xs font-bold text-amber-500 uppercase tracking-wide mb-2">
-                    {isTap ? "👆 Tap your answer" : "Choose the correct answer"}
+            {/* ── CHOICE BUTTONS ── */}
+            {showChoices && (
+              <div className="qp-answer-section">
+                {!done ? (
+                  <>
+                    <p className="qp-answer-label">
+                      {isTap ? "👆 Tap your answer" : "Choose the correct answer"}
+                    </p>
+                    <div className="qp-choices-grid">
+                      {choices.map((choice, i) => {
+                        const c = CHOICE_COLORS[i % CHOICE_COLORS.length];
+                        const isSelected = selectedChoice === choice;
+                        return (
+                          <button key={choice} onClick={() => handleChoiceSelect(choice)}
+                            className="qp-choice-btn font-display font-bold transition-all active:scale-95 text-left flex items-center gap-2"
+                            style={{
+                              backgroundColor: isSelected ? c.sel : c.bg,
+                              color: isSelected ? "#FFFFFF" : c.text,
+                              border: `2px solid ${isSelected ? c.sel : c.border}`,
+                              boxShadow: isSelected ? `0 4px 12px ${c.sel}44` : "0 2px 6px rgba(0,0,0,0.06)",
+                            }}>
+                            <span className="qp-choice-label opacity-60">{CHOICE_LABELS[i]}.</span>
+                            <span>{choice}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="qp-answer-label">Answer review</p>
+                    <div className="qp-choices-grid">
+                      {choices.map((choice, i) => {
+                        const c = CHOICE_COLORS[i % CHOICE_COLORS.length];
+                        const isCorrectChoice = checkAnswer(choice, currentQ.answer);
+                        const wasSelected = selectedChoice === choice;
+                        let bg = c.bg, border = c.border, color = c.text;
+                        if (isCorrectChoice) { bg = "#F0FDF4"; border = "#22C55E"; color = "#166534"; }
+                        else if (wasSelected && !isCorrectChoice) { bg = "#FEF2F2"; border = "#EF4444"; color = "#991B1B"; }
+                        return (
+                          <div key={choice} className="qp-choice-btn font-display font-bold flex items-center gap-2 relative"
+                            style={{ backgroundColor: bg, border: `2px solid ${border}`, color }}>
+                            <span className="qp-choice-label opacity-60">{CHOICE_LABELS[i]}.</span>
+                            <span>{choice}</span>
+                            {isCorrectChoice && <span className="absolute top-1 right-2 text-base">✅</span>}
+                            {wasSelected && !isCorrectChoice && <span className="absolute top-1 right-2 text-base">❌</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* ── KEYBOARD TEXT INPUT ── */}
+            {!showChoices && !done && (
+              <div className="qp-answer-section">
+                <p className="qp-answer-label">Type your answer</p>
+                {currentQ.answerFormat && (
+                  <p className="text-xs font-bold text-indigo-500 mb-2 flex items-center gap-1">
+                    <span>📝</span> Format:
+                    <span className="bg-indigo-50 border border-indigo-200 rounded px-1.5 py-0.5 font-mono text-indigo-700 ml-1">
+                      {currentQ.answerFormat}
+                    </span>
                   </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {choices.map((choice, i) => {
-                      const c = CHOICE_COLORS[i % CHOICE_COLORS.length];
-                      const isSelected = selectedChoice === choice;
-                      return (
-                        <button key={choice} onClick={() => handleChoiceSelect(choice)}
-                          className="rounded-xl quiz-choice-btn font-display font-bold transition-all active:scale-95 text-left flex items-center gap-2"
-                          style={{
-                            backgroundColor: isSelected ? c.sel : c.bg,
-                            color: isSelected ? "#FFFFFF" : c.text,
-                            border: `2px solid ${isSelected ? c.sel : c.border}`,
-                            boxShadow: isSelected ? `0 4px 12px ${c.sel}44` : "0 1px 3px rgba(0,0,0,0.06)",
-                          }}>
-                          <span className="text-xs font-black opacity-60">{CHOICE_LABELS[i]}.</span>
-                          <span>{choice}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-              {done && (
-                <div className="grid grid-cols-2 gap-2">
-                  {choices.map((choice, i) => {
-                    const c = CHOICE_COLORS[i % CHOICE_COLORS.length];
-                    const isCorrectChoice = checkAnswer(choice, currentQ.answer);
-                    const wasSelected = selectedChoice === choice;
-                    let bg = c.bg, border = c.border, color = c.text;
-                    if (isCorrectChoice) { bg = "#F0FDF4"; border = "#22C55E"; color = "#166534"; }
-                    else if (wasSelected && !isCorrectChoice) { bg = "#FEF2F2"; border = "#EF4444"; color = "#991B1B"; }
-                    return (
-                      <div key={choice} className="rounded-xl quiz-choice-btn font-display font-bold flex items-center gap-2 relative"
-                        style={{ backgroundColor: bg, border: `2px solid ${border}`, color }}>
-                        <span className="text-xs font-black opacity-60">{CHOICE_LABELS[i]}.</span>
-                        <span>{choice}</span>
-                        {isCorrectChoice && <span className="absolute top-0.5 right-1.5 text-sm">✅</span>}
-                        {wasSelected && !isCorrectChoice && <span className="absolute top-0.5 right-1.5 text-sm">❌</span>}
-                      </div>
-                    );
-                  })}
+                )}
+                <div className="flex gap-2">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={userAnswer}
+                    onChange={e => setUserAnswer(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={currentQ.answerFormat ? `e.g. ${currentQ.answerFormat}` : "Type your answer..."}
+                    className={`qp-text-input flex-1 border-2 rounded-xl px-4 py-3 font-bold text-lg text-gray-800 bg-amber-50 focus:bg-white transition-all outline-none focus:border-amber-400 ${shakeInput ? "animate-shake-wrong" : ""}`}
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => handleSubmit()}
+                    disabled={!userAnswer.trim()}
+                    className="qp-submit-btn px-5 py-3 text-white font-display font-bold text-base rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                    style={{ backgroundColor: userAnswer.trim() ? "#F59E0B" : "#FCD34D" }}>
+                    Check ✓
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* ── KEYBOARD TEXT INPUT ── */}
-          {!showChoices && !done && (
-            <div className="quiz-section">
-              {currentQ.answerFormat && (
-                <p className="text-xs font-bold text-indigo-500 mb-1.5 flex items-center gap-1">
-                  <span>📝</span> Format: <span className="bg-indigo-50 border border-indigo-200 rounded px-1.5 py-0.5 font-mono text-indigo-700">{currentQ.answerFormat}</span>
-                </p>
-              )}
-              <div className="flex gap-2">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={userAnswer}
-                  onChange={e => setUserAnswer(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={currentQ.answerFormat ? `e.g. ${currentQ.answerFormat}` : "Type your answer here..."}
-                  className={`answer-input flex-1 border-2 rounded-xl px-3 py-2.5 font-bold text-base text-gray-800 bg-amber-50 focus:bg-white transition-all ${shakeInput ? "animate-shake-wrong" : ""}`}
-                  autoFocus
-                />
-                <button
-                  onClick={() => handleSubmit()}
-                  disabled={!userAnswer.trim()}
-                  className="px-4 py-2.5 text-white font-display text-base rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
-                  style={{ backgroundColor: userAnswer.trim() ? "#F59E0B" : "#FCD34D" }}>
-                  Check ✓
-                </button>
+                {!done && !isTap && (
+                  <p className="text-center text-xs text-amber-400 font-semibold mt-2">
+                    Press <kbd style={{background:'#FEF3C7', color:'#92400E', padding:'1px 5px', borderRadius:'4px', fontWeight:'bold'}}>Enter ↵</kbd> to submit
+                  </p>
+                )}
               </div>
-              {qState !== "answering" && (
-                <p className="text-xs text-amber-500 font-semibold mt-1">Try again with the hint! 👆</p>
-              )}
-            </div>
-          )}
+            )}
 
-          {/* ── FEEDBACK BANNER ── */}
-          {fb && (
-            <div className="quiz-section">
-              <div className="p-3 rounded-xl animate-float-up flex items-center gap-2"
-                style={{ backgroundColor: fb.bg, border: `1px solid ${fb.border}` }}>
-                <span className="text-2xl">{fb.emoji}</span>
+            {/* ── FEEDBACK BANNER ── */}
+            {fb && (
+              <div className="qp-feedback animate-float-up flex items-center gap-3"
+                style={{ backgroundColor: fb.bg, border: `1.5px solid ${fb.border}` }}>
+                <span className="text-3xl">{fb.emoji}</span>
                 <div>
-                  <p className="font-bold text-sm" style={{ color: fb.titleColor }}>{fb.title}</p>
-                  {fb.sub && <p className="text-xs font-semibold" style={{ color: fb.subColor }}>{fb.sub}</p>}
+                  <p className="font-bold text-base" style={{ color: fb.titleColor }}>{fb.title}</p>
+                  {fb.sub && <p className="text-sm font-semibold" style={{ color: fb.subColor }}>{fb.sub}</p>}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── PROGRESSIVE HINTS (right column) ── */}
-          {hintsToShow > 0 && (
-            <div className="quiz-section">
-              <div className="space-y-1.5">
-                {hintMeta.slice(0, hintsToShow).map((h, i) => (
-                  <div key={i} className={`${h.cls} rounded-xl p-2.5 animate-hint-drop`}>
-                    <p className="text-xs font-bold mb-0.5" style={{ color: h.color }}>{h.label}</p>
-                    <p className="text-xs text-gray-700 font-medium">{currentQ.hints[i]}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── MANUAL HINT REVEAL (portrait only — landscape shows in left column) ── */}
-          {qState === "answering" && (
-            <div className="quiz-section quiz-hints-portrait-only">
-              <div className="border-t border-amber-100 pt-3">
-                <p className="text-xs font-bold text-amber-600 mb-2 uppercase tracking-wide">🔍 Need a hint? (Try without first!)</p>
-                <div className="space-y-1.5">
+            {/* ── HINT REVEAL BUTTONS (when answering, no hints shown yet) ── */}
+            {qState === "answering" && (
+              <div className="qp-hint-buttons">
+                <p className="text-xs font-bold text-amber-500 mb-2 uppercase tracking-wide">🔍 Need a hint?</p>
+                <div className="space-y-2">
                   {hintMeta.map((h, i) => (
                     <button key={i}
                       onClick={() => {
@@ -547,38 +533,39 @@ export default function QuizPage({ topicId: topicIdProp }: { topicId?: string })
                         else if (i === 1) setQState("wrong_h1");
                         else setQState("wrong_h2");
                       }}
-                      className="w-full text-left px-3 py-2 rounded-xl border-2 border-dashed font-semibold text-xs transition-all"
+                      className="w-full text-left px-3 py-2 rounded-xl border-2 border-dashed font-semibold text-xs transition-all hover:opacity-80"
                       style={{ borderColor: h.color, color: h.color }}>
                       👁 Reveal {h.label}
                     </button>
                   ))}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── NEXT BUTTON ── */}
-          {done && (
-            <div className="quiz-section">
-              <button onClick={handleNext}
-                className="w-full py-3 text-white font-display text-lg rounded-2xl shadow-md transition-all active:scale-95"
-                style={{ backgroundColor: "#6366F1" }}>
-                {currentIdx + 1 >= questions.length ? "Finish 🏁" : "Next Question →"}
-              </button>
-              <p className="text-center text-xs text-amber-400 mt-1.5 font-semibold">
-                Press <kbd style={{background:'#FEF3C7', color:'#92400E', padding:'1px 5px', borderRadius:'4px', fontWeight:'bold'}}>Enter ↵</kbd> for next
-              </p>
-            </div>
-          )}
+            {/* ── NEXT BUTTON ── */}
+            {done && (
+              <div className="qp-next-section">
+                <button onClick={handleNext}
+                  className="w-full py-4 text-white font-display text-xl font-bold rounded-2xl shadow-md transition-all active:scale-95 hover:opacity-90"
+                  style={{ backgroundColor: "#6366F1" }}>
+                  {currentIdx + 1 >= questions.length ? "Finish 🏁" : "Next Question →"}
+                </button>
+                <p className="text-center text-xs text-amber-400 mt-2 font-semibold">
+                  Press <kbd style={{background:'#FEF3C7', color:'#92400E', padding:'1px 5px', borderRadius:'4px', fontWeight:'bold'}}>Enter ↵</kbd> for next
+                </p>
+              </div>
+            )}
 
-          {/* Enter hint for keyboard mode */}
-          {!done && !isTap && !showChoices && (
-            <p className="text-center text-xs text-amber-400 font-semibold">
-              Press <kbd style={{background:'#FEF3C7', color:'#92400E', padding:'1px 5px', borderRadius:'4px', fontWeight:'bold'}}>Enter ↵</kbd> to submit
-            </p>
-          )}
+            {/* Spacer prompt when nothing else is showing */}
+            {!done && showChoices && (
+              <div className="qp-pick-prompt">
+                <p className="text-amber-300 font-bold text-sm">👇 Pick your answer above</p>
+              </div>
+            )}
+
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
